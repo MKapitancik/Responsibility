@@ -16,7 +16,5 @@ class FetchCommits:
             for i, row in enumerate(csv_reader):
                 if(i == 0):
                     continue
-                                
-                data.append([int(row[0]), str(row[1]), str(row[3])])
+                data.append(row)
         return data
-                

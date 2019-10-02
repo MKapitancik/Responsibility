@@ -2,7 +2,8 @@ from DataPreparation.FetchCommits import FetchCommits
 from DataPreparation.TextNormalization import TextNormalization
 from DataPreparation.TeamNameParser import TeamNameParser
 from DataPreparation.DataCleaning import DataCleaning
-from DataPreparation.TextOperations import *
+from DataPreparation.ConvertToTypes import ConvertToTypes
+from DataPreparation.TextOperations import TextOperations
 from collections import Counter
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -12,10 +13,21 @@ from sklearn import preprocessing
 
 c = FetchCommits(open, 'TeamStories.csv', 'r', 'utf-16-le', '\t')
 data = c.Load()
-to = TextOperations()
-textNormalization = TextNormalization([to.OnlyCharacters, to.SingleWhitespaces, to.StripEndWhitespaces, to.RemoveCamelCase, to.ToLower])
 
-dc = DataCleaning(textNormalization, TeamNameParser())
+typeConverter = ConvertToTypes(int, str, None, str)
+data = typeConverter.Convert(data)
+
+to = TextOperations()
+storyOperations = TextNormalization([to.OnlyCharacters, to.SingleWhitespaces, to.StripEndWhitespaces, to.RemoveCamelCase, to.ToLower])
+teamOperations = TextNormalization([storyOperations.Normalize, TeamNameParser().Parse])
+
+column_operations = {
+    0 : None,
+    1 : storyOperations.Normalize,
+    2 : teamOperations.Normalize,
+}
+
+dc = DataCleaning(column_operations)
 
 data = dc.Clean(data)
 
@@ -54,7 +66,7 @@ for d in data:
 model = make_pipeline(TfidfVectorizer(sublinear_tf=True, ngram_range=(1, 2), stop_words='english'), MultinomialNB())
 model.fit(values, target)
 
-predict = model.predict_proba(['lion animal'])
+predict = model.predict_proba(['equipment use case'])
 
 team_predict = list(zip(model.classes_, predict[0]))
 team_predict_sorted = sorted(team_predict, key=lambda x: x[1], reverse=True)
