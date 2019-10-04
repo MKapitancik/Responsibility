@@ -1,25 +1,31 @@
+from random import shuffle
+
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split, cross_val_score
+from nltk.corpus import stopwords
+
 from DataPreparation.FetchCommits import FetchCommits
 from DataPreparation.TextNormalization import TextNormalization
 from DataPreparation.TeamNameParser import TeamNameParser
 from DataPreparation.DataCleaning import DataCleaning
 from DataPreparation.ConvertToTypes import ConvertToTypes
 from DataPreparation.TextOperations import TextOperations
-from collections import Counter
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import make_pipeline
-from sklearn import preprocessing
 
 c = FetchCommits(open, 'TeamStories.csv', 'r', 'utf-16-le', '\t')
 data = c.Load()
 
-typeConverter = ConvertToTypes(int, str, None, str)
+typeConverter = ConvertToTypes(int, str, str)
 data = typeConverter.Convert(data)
+shuffle(data)
 
 to = TextOperations()
-storyOperations = TextNormalization([to.OnlyCharacters, to.SingleWhitespaces, to.StripEndWhitespaces, to.RemoveCamelCase, to.ToLower])
-teamOperations = TextNormalization([storyOperations.Normalize, TeamNameParser().Parse])
+storyOperations = TextNormalization()
+storyOperations.SetStrategy(to.OnlyCharacters, to.RemoveCamelCase, to.SingleWhitespaces, to.StripEndWhitespaces, to.ToLower)
+
+teamOperations = TextNormalization()
+teamOperations.SetStrategy(to.OnlyCharacters, to.SingleWhitespaces, to.ToLower, TeamNameParser().Parse)
 
 column_operations = {
     0 : None,
@@ -28,48 +34,33 @@ column_operations = {
 }
 
 dc = DataCleaning(column_operations)
-
 data = dc.Clean(data)
-
-split = [d[1].split() for d in data]
-
-words = [item.lower() for sublist in split for item in sublist if len(item) > 4]
-
-wordsCount = Counter(words)
-
-# print(wordsCount.most_common(20))
-# print("most uncommon:")
-# print(list(wordsCount.items())[-20:])
-
-teamWords = {}
-for d in data:
-    key = d[2]    
-    values = d[1]
-    if (key in teamWords):
-        teamWords[key] += ' ' +  values  #[v for v in values.split() if len(v) > 2]
-        continue
-    teamWords[key] = values #[v for v in values.split() if len(v) > 2]
-
-# for key, value in teamWords.items():
-#     c = Counter(value)
-#     print('Team: %s' % key, ' most common values : %s' % c.most_common(5))
 
 values = []
 target = []
 
 for d in data:
-    key = d[2]    
-    val = d[1]
-    values.append(val)
-    target.append(key)
+    team = d[2]    
+    summary = d[1]
+    values.append(summary)
+    target.append(team)
+    #print('{0:10} {1}'.format(team, summary))
 
-model = make_pipeline(TfidfVectorizer(sublinear_tf=True, ngram_range=(1, 2), stop_words='english'), MultinomialNB())
+model = make_pipeline(TfidfVectorizer(stop_words=set(stopwords.words('english')), sublinear_tf=True, ngram_range=(1, 2), min_df=2, max_df=0.95), MultinomialNB())
+#model = make_pipeline(CountVectorizer(stop_words=set(stopwords.words('english')), ngram_range=(1, 2), min_df=2, max_df=0.95), MultinomialNB())
+scores = cross_val_score(model, values, target, cv=5)
+
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))    
+
 model.fit(values, target)
 
-predict = model.predict_proba(['equipment use case'])
+while True:
+    txt = input("Predict for:")
 
-team_predict = list(zip(model.classes_, predict[0]))
-team_predict_sorted = sorted(team_predict, key=lambda x: x[1], reverse=True)
-[print(team) for team in team_predict_sorted[:3]]
-
-
+    if txt is 'Q':
+        break
+    
+    predict = model.predict_proba([txt])
+    team_predict = list(zip(model.classes_, predict[0]))
+    team_predict_sorted = sorted(team_predict, key=lambda x: x[1], reverse=True)
+    [print(team) for team in team_predict_sorted[:3]]

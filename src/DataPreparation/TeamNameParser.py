@@ -4,6 +4,7 @@ class TeamNameParser:
             'red',
             'jerry',
             'sid',
+            'jago',
             'trinity',
             'morpheus',
             'neo',

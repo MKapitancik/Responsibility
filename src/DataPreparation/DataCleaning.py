@@ -6,19 +6,26 @@ class DataCleaning:
         self.columnOperations = columnOperations
     
     def Clean(self, data):
-        result = []
-
+        result = []    
         for row in data:
             line = []
             for c, o in self.columnOperations.items():
                 if o is None:
                     line.append(row[c])  
                     continue            
-                value = o(row[c])
-                if (value is not None):
+                value = self.ParseRow(o, row[c])
+                if (value):
                     line.append(value)
 
             if len(line) == len(self.columnOperations.keys()):
-                result.append(line)
-
+                result.append(line)               
         return result
+
+    def ParseRow(self, operations, row):
+        sentence = ''
+        for word in row.split():
+            parsed = operations(word)
+            if(parsed):
+                sentence += parsed + ' '
+
+        return sentence[:-1]

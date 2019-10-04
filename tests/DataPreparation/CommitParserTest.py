@@ -1,5 +1,4 @@
 import unittest
-from src.DataPreparation.CommitParser import CommitParser
 
 class CommitParserTest(unittest.TestCase):
     def setUp(self):
@@ -18,8 +17,6 @@ class CommitParserTest(unittest.TestCase):
             ]
 
     def test_init_createHistWithProperElements(self):
-        p = CommitParser()
-
         for i, x in enumerate(self.commits):
 
             result = p.Parse(str(x))

@@ -4,7 +4,7 @@ class TextOperations:
     def __init__(self):
         self.single_whitespace_p = re.compile(r'\s\s+')
         self.strip_ends_p = re.compile(r'^\s+|\s+$')
-        self.only_words_p = re.compile('[^a-zA-Z ]') # filter for A-Z and numbers
+        self.only_words_p = re.compile('[^a-zA-Z0-9 ]') # filter for A-Z and numbers
 
     def ToLower(self, text):
         return text.lower()
