@@ -13,11 +13,11 @@ from DataPreparation.DataCleaning import DataCleaning
 from DataPreparation.ConvertToTypes import ConvertToTypes
 from DataPreparation.TextOperations import TextOperations
 
-c = FetchCommits(open, 'TeamStories.csv', 'r', 'utf-16-le', '\t')
-data = c.Load()
+commits = FetchCommits(open, 'TeamStories.csv', 'r', 'utf-16-le', '\t')
+data = commits.Load()
 
 typeConverter = ConvertToTypes(int, str, str)
-data = typeConverter.Convert(data)
+data = [typeConverter.Convert(row) for row in data]
 shuffle(data)
 
 to = TextOperations()
