@@ -1,0 +1,16 @@
+{% if team_list %}
+    <table>
+        <tr>
+            <th>Team</th>
+            <th>Probability</th>
+        </tr>
+    {% for team in team_list %}
+        <tr>
+            <td>{{ team.0 }}</td>
+            <td>{{ team.1 }}</td>
+        <tr>
+    {% endfor %}
+    </table>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
