@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from Business.Teams import Teams
+from Services.Teams import Teams
 from .forms import QuestionForm
 
 def index(request):
