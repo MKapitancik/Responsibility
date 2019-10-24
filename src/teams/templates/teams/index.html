@@ -1,16 +1,10 @@
-{% if team_list %}
-    <table>
-        <tr>
-            <th>Team</th>
-            <th>Probability</th>
-        </tr>
-    {% for team in team_list %}
-        <tr>
-            <td>{{ team.0 }}</td>
-            <td>{{ team.1 }}</td>
-        <tr>
-    {% endfor %}
-    </table>
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'teams/style.css' %}">
+
+<div class="container">
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Search">
+    </form>
+</div>

@@ -1,4 +1,4 @@
 from django import forms
 
 class QuestionForm(forms.Form):
-    question = forms.CharField(label='Question', max_length=100)    
+    question = forms.CharField(max_length=100, label='')
