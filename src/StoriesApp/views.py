@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from Services.Teams import Teams
+from Services.Stories import Stories
 from .forms import QuestionForm
+
+stories = Stories()
 
 def index(request):
     if request.method == 'POST':
@@ -20,7 +22,6 @@ def search(request, question):
              return redirect(search, question = form.cleaned_data['question'])
     else:
         form = QuestionForm()
-        teams = Teams()
-        vals = teams.GetTeams(question)
-        context = { 'form': form, 'team_list': vals }
+        predictions = stories.GetTeamPrediction(question)
+        context = { 'form': form, 'team_list': predictions }
         return render(request, 'teams/search.html', context)
